@@ -1,70 +1,107 @@
-var lifes = [];
+const DEATH_CELL = `<div style="width: 10px ; height: 10px ; background: white; border: 1px solid gray; float: left" ></div>`;
+const LIVE_CELL = `<div style="width: 10px ; height: 10px ; background: black; border: 1px solid gray; float: left" ></div>`;
+const D = 0;
+const L = 1;
+const SIZE = 20;
+const LIVE_RATE = 3;
+const OK_RATE = 2;
 
-lifes.push([1,0,0,1,0,0,1,1,0,1]);
-lifes.push([0,1,0,1,0,1,1,0,0,1]);
-lifes.push([1,1,1,0,1,0,0,0,1,1]);
-lifes.push([1,0,0,1,1,1,1,1,1,1]);
-lifes.push([1,0,0,0,0,1,1,0,0,1]);
-lifes.push([1,0,0,1,0,0,1,0,0,1]);
-lifes.push([0,1,0,1,0,1,1,1,0,1]);
-lifes.push([1,1,1,0,1,0,0,1,1,1]);
-lifes.push([1,0,0,1,1,1,1,1,1,1]);
-lifes.push([1,0,0,0,0,1,1,0,0,1]);
+$(document).ready(function () {
+    let lifeData = setupLifeData();
+    drawMap(lifeData);
 
+    setInterval(function () {
+        lifeData = liveNext(lifeData);
+        drawMap(lifeData);
+    }, 500)
+});
 
+function setupLifeData() {
+    let life = [];
+    life.push([D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, L, D, D, D, D, D, L, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, L, D, D, D, D, D, L, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, L, L, D, D, D, L, L, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]);
+    life.push([D, L, L, L, D, D, L, L, D, L, L, D, D, L, L, L, D, D, D, D]);
+    life.push([D, D, D, L, D, L, D, L, D, L, D, L, D, L, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, L, L, D, D, D, L, L, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, L, L, D, D, D, L, L, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, L, D, L, D, L, D, L, D, L, D, L, D, D, D, D, D, D]);
+    life.push([D, L, L, L, D, D, L, L, D, L, L, D, D, L, L, L, D, D, D, D]);
+    life.push([D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, L, L, D, D, D, L, L, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, L, D, D, D, D, D, L, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, L, D, D, D, D, D, L, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]);
+    life.push([D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D, D]);
 
-let html = '';
-
-for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 10; j++) {
-        if (lifes[i][j] == 0){
-            // viết vài dòng vào đây để return cái con củ lìn div màu trắng ở thẻ file html nhưng đm nó éo biết làm T_T
-            html+=`<div style="width: 10px ; height: 10px ; background: white; border: 1px solid gray; float: left" ></div>`;
-        }
-        else {
-            // viết vài dòng vào đây để return cái con củ lìn div màu đen ở thẻ file html nhưng đm nó éo biết làm T_T
-            html+=`<div style="width: 10px ; height: 10px ; background: black; border: 1px solid gray; float: left" ></div>`;
-        }
-    }
+    return life;
 }
 
-function draw() {
-    let next = lifes;
-    for (let i = 0; i < lifes.length; i++) {
-        for (let j = 0; j < lifes[0].length; j++) {
+function drawMap(lifeData) {
+    document.getElementById("demo").innerHTML = setupLife(lifeData);
+}
 
-            if (i == 0 || i == lifes.length -1 ||j == 0 || j == lifes[0].length -1 ){
-                next[i][j] = lifes[i][j];
+function liveNext(oldLive) {
+    let nextLive = setupLifeData();
+
+    for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE; j++) {
+            let me = oldLive[i][j];
+            let numberOfNeighbor = countLiveNeighbors(oldLive, i, j);
+            nextLive[i][j] = isLiveCondition(me, numberOfNeighbor) ? L : D;
+        }
+    }
+    return nextLive;
+}
+
+function setupLife(life) {
+    let html = '';
+
+    for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE; j++) {
+            if (life[i][j] === 0) {
+                html += DEATH_CELL;
+            } else {
+                html += LIVE_CELL;
             }
-            else {
-            let state = lifes[i][j];
-            let neighbors = countLiveNeighbors(lifes, i, j);
-                if (state == 0 && neighbors == 3) {
-                next[i][j] =1;
-                } else if(state == 1 && (neighbors > 3 || neighbors < 2)){
-                next[i][j] =0;
-                } else{
-                next[i][j] = state;
-                }
-            }
-        }
-
-    }
-    lifes = next;
-}
-
-// Đếm hàng xóm
-function countLiveNeighbors(lifes,x,y) {
-    let sum =0;
-    for (let i = -1; i < 2; i++) {
-        for (let j = -1; j < 2; j++) {
-            let col = x+i;
-            let row = y+j;
-            sum += lifes[col][row];
         }
     }
-    sum -= lifes[x][y];
-    return sum;
+    return html;
 }
 
+function countLiveNeighbors(oldLive, i, j) {
+    let numberOfNeighbor = 0;
+    let topAxis = i === 0 ? SIZE - 1 : i - 1;
+    let botAxis = i === SIZE - 1 ? 0 : i + 1;
+    let leftAxis = j === 0 ? SIZE - 1 : j - 1;
+    let rightAxis = j === SIZE - 1 ? 0 : j + 1;
 
+    numberOfNeighbor
+        = oldLive[topAxis][leftAxis] + oldLive[topAxis][j] + oldLive[topAxis][rightAxis]
+        + oldLive[i][leftAxis] + oldLive[i][rightAxis]
+        + oldLive[botAxis][leftAxis] + oldLive[botAxis][j] + oldLive[botAxis][rightAxis];
+
+    return numberOfNeighbor;
+}
+
+function isLive(me) {
+    return me === L;
+}
+
+function isDeath(me) {
+    return me === D;
+}
+
+function isLiveCondition(oldCell, numberOfNeighbor) {
+    if (isLive(oldCell) && (numberOfNeighbor === LIVE_RATE || numberOfNeighbor === OK_RATE)) {
+        return true;
+    } else if (isDeath(oldCell) && numberOfNeighbor === LIVE_RATE) {
+        return true;
+    }
+    return false;
+}
